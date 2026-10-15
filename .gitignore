@@ -1,0 +1,5 @@
+.env
+.claude
+*.md
+node_modules
+drizzle
