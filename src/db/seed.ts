@@ -28,6 +28,39 @@ async function seed() {
             isActive: true,
         },
         {
+            roomNumber: "103",
+            type: "Standard",
+            price: "89.00",
+            capacity: 2,
+            bedType: "Queen",
+            floor: 1,
+            amenities: ["Wi-Fi", "Air conditioning", "TV"],
+            images: [],
+            isActive: true,
+        },
+        {
+            roomNumber: "104",
+            type: "Deluxe",
+            price: "159.00",
+            capacity: 2,
+            bedType: "King",
+            floor: 1,
+            amenities: ["Wi-Fi", "Air conditioning", "TV", "Mini bar"],
+            images: [],
+            isActive: true,
+        },
+        {
+            roomNumber: "105",
+            type: "Accessible",
+            price: "119.00",
+            capacity: 2,
+            bedType: "Queen",
+            floor: 1,
+            amenities: ["Wi-Fi", "Air conditioning", "TV", "Accessible bathroom"],
+            images: [],
+            isActive: true,
+        },
+        {
             roomNumber: "201",
             type: "Family",
             price: "199.00",
@@ -35,6 +68,50 @@ async function seed() {
             bedType: "Two Queen",
             floor: 2,
             amenities: ["Wi-Fi", "Air conditioning", "TV", "Mini bar"],
+            images: [],
+            isActive: true,
+        },
+        {
+            roomNumber: "202",
+            type: "Deluxe",
+            price: "159.00",
+            capacity: 2,
+            bedType: "King",
+            floor: 2,
+            amenities: ["Wi-Fi", "Air conditioning", "TV", "Mini bar"],
+            images: [],
+            isActive: true,
+        },
+        {
+            roomNumber: "203",
+            type: "Family",
+            price: "209.00",
+            capacity: 4,
+            bedType: "Two Queen",
+            floor: 2,
+            amenities: ["Wi-Fi", "Air conditioning", "TV", "Mini bar"],
+            images: [],
+            isActive: true,
+        },
+        {
+            roomNumber: "204",
+            type: "Suite",
+            price: "269.00",
+            capacity: 3,
+            bedType: "King",
+            floor: 2,
+            amenities: ["Wi-Fi", "Air conditioning", "TV", "Mini bar", "Living area"],
+            images: [],
+            isActive: true,
+        },
+        {
+            roomNumber: "301",
+            type: "Suite",
+            price: "289.00",
+            capacity: 3,
+            bedType: "King",
+            floor: 3,
+            amenities: ["Wi-Fi", "Air conditioning", "TV", "Mini bar", "Balcony"],
             images: [],
             isActive: true,
         },
@@ -46,18 +123,20 @@ async function seed() {
         email: "6ereke7@gmail.com",
         phoneNumber: "+1234567890",
         role: "admin",
-        plainPassword: "123456",
-        passwordHash: ''
     }
-    const existing =await db
+    const existing = await db
     .select()
     .from(staff)
     .where(eq(staff.email, staffData.email))
-    if(existing.length > 0){
+    if (existing.length > 0) {
         console.log("Admin user already exists. Skipping seeding.")
     } else {
-        staffData.passwordHash = await bcrypt.hash(staffData.plainPassword, 10)
-        const [newStaff] = await db
+        const plainPassword = process.env.ADMIN_SEED_PASSWORD
+        if (!plainPassword) {
+            throw new Error("ADMIN_SEED_PASSWORD must be set to seed the admin account.")
+        }
+        const passwordHash = await bcrypt.hash(plainPassword, 10)
+        await db
             .insert(staff)
             .values({
                 firstName: staffData.firstName,
@@ -65,10 +144,9 @@ async function seed() {
                 email: staffData.email,
                 phoneNumber: staffData.phoneNumber,
                 role: staffData.role,
-                passwordHash: staffData.passwordHash
+                passwordHash
             })
-            .returning()
-        console.log("Admin user seeded:", newStaff)
+        console.log("Admin user seeded")
     }
 
     const existingRooms = await db
@@ -86,4 +164,5 @@ async function seed() {
 }
 seed().catch((error) => {
     console.error("Error seeding database:", error)
+    process.exitCode = 1
 })

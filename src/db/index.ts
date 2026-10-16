@@ -1,9 +1,9 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema.ts";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
-dotenv.config()
+dotenv.config();
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -16,9 +16,9 @@ const pool = new Pool({
 export const db = drizzle(pool, { schema });
 export const checkConnection = async () => {
   try {
-    db.execute(sql`SELECT 1`);
-    return true
+    await db.execute(sql`SELECT 1`);
+    return true;
   } catch (error) {
-    return false
+    return false;
   }
-}
+};
