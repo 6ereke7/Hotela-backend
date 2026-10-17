@@ -3,6 +3,15 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getStaffByEmail } from "./auth.services.ts";
 
+const getAuthCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    sameSite: isProduction ? ("none" as const) : ("lax" as const),
+    secure: isProduction,
+  };
+};
+
 export const login = async (
   req: Request,
   res: Response,
@@ -36,9 +45,7 @@ export const login = async (
     { expiresIn: "1d" },
   );
   res.cookie("staff_token", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    ...getAuthCookieOptions(),
     maxAge: 24 * 60 * 60 * 1000,
   });
   res.status(200).json({
@@ -52,10 +59,7 @@ export const login = async (
   });
 };
 export const logout = (req: Request, res: Response, next: NextFunction) => {
-  res.clearCookie("staff_token", {
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+  res.clearCookie("staff_token", getAuthCookieOptions());
   res.status(200).json({
     success: true,
     data: "logged out successfully",

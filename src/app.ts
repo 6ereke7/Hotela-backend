@@ -1,12 +1,15 @@
 import express from "express";
 import type { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import roomsRouter from "./module/rooms/rooms.routes.ts";
 import authRouter from "./module/auth/auth.routes.ts";
 import { checkConnection } from "./db/index.ts";
 import { bookingsRouter } from "./module/bookings/bookings.routes.ts";
 import cookieParser from "cookie-parser";
 import staffRouter from "./module/staff/staff.routes.ts";
+
+dotenv.config();
 
 const app: Application = express();
 
