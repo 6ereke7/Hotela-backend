@@ -10,13 +10,23 @@ interface ValidationSchemas {
 export const validateMiddleware = (schemas: ValidationSchemas) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (schemas.body) req.body = await schemas.body.parseAsync(req.body);
+      const validated: NonNullable<Request["validated"]> = {};
+
+      if (schemas.body) {
+        validated.body = await schemas.body.parseAsync(req.body);
+        req.body = validated.body;
+      }
       if (schemas.query)
-        res.locals.validatedQuery = await schemas.query.parseAsync(req.query);
-      if (schemas.params)
-        res.locals.validatedParams = await schemas.params.parseAsync(
-          req.params,
-        );
+        validated.query = await schemas.query.parseAsync(req.query);
+      if (schemas.params) {
+        validated.params = await schemas.params.parseAsync(req.params);
+        res.locals.validatedParams = validated.params;
+      }
+
+      req.validated = validated;
+      if (validated.query) {
+        res.locals.validatedQuery = validated.query;
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({
