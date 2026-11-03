@@ -53,9 +53,15 @@ export const confirmBooking = async (
     if (!validOtp) return { kind: "invalid" as const };
 
     const [room] = await tx
-      .select({ price: rooms.price, capacity: rooms.capacity })
+      .select({ price: rooms.pricePerNight, capacity: rooms.capacity })
       .from(rooms)
-      .where(and(eq(rooms.id, booking.roomId), eq(rooms.isActive, true)))
+      .where(
+        and(
+          eq(rooms.id, booking.roomId),
+          eq(rooms.isActive, true),
+          eq(rooms.status, "available"),
+        ),
+      )
       .limit(1)
       .for("update");
     if (!room || booking.numberOfGuests > room.capacity) {

@@ -1,5 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import * as service from "./rooms.service.ts";
+import { rooms as roomTable } from "../../db/schema.ts";
+
+type RoomRecord = typeof roomTable.$inferSelect;
 
 export const createRoom = async (
   req: Request,
@@ -7,8 +10,15 @@ export const createRoom = async (
   next: NextFunction,
 ) => {
   try {
-    const newRoom = await service.createRoom(req.body);
-    res.status(201).json({ success: true, data: newRoom });
+    const { price, ...roomData } = req.body;
+    const newRoom = await service.createRoom({
+      ...roomData,
+      pricePerNight: String(price),
+    });
+    res.status(201).json({
+      success: true,
+      data: newRoom ? newRoom : null,
+    });
   } catch (error) {
     next(error);
   }
@@ -20,13 +30,27 @@ export const getRooms = async (
   next: NextFunction,
 ) => {
   try {
-    const rooms = await service.getAllRooms(
-      res.locals.validatedQuery as {
-        checkIn?: string;
-        checkOut?: string;
-        type?: string;
-        capacity?: number;
-      },
+    const rooms = await service.getRoom(
+      (req.validated?.query as service.RoomFilter | undefined) ?? {},
+    );
+    res.status(200).json({
+      success: true,
+      data: rooms,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRoomInventory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const rooms = await service.getRoom(
+      (req.validated?.query as service.RoomFilter | undefined) ?? {},
+      { includeUnavailable: true },
     );
     res.status(200).json({ success: true, data: rooms });
   } catch (error) {
@@ -40,8 +64,9 @@ export const getRoomById = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = res.locals.validatedParams as { id: string };
-    const room = await service.getRoomById(id);
+    const room = await service.getRoomById(
+      (res.locals.validatedParams as { id: string }).id,
+    );
     if (!room) {
       res.status(404).json({ success: false, error: "room not found" });
       return;
@@ -58,9 +83,13 @@ export const updateRoom = async (
   next: NextFunction,
 ) => {
   try {
+    const { price, ...roomData } = req.body;
     const updatedRoom = await service.updateRoom(
       (res.locals.validatedParams as { id: string }).id,
-      req.body,
+      {
+        ...roomData,
+        ...(price === undefined ? {} : { pricePerNight: String(price) }),
+      },
     );
     if (!updatedRoom) {
       res.status(404).json({ success: false, error: "room not found" });

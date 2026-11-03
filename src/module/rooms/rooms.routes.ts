@@ -4,7 +4,7 @@ import { validateMiddleware } from "../../middleware/validate.ts";
 import {
   createRoomSchema,
   getRoomByIdSchema,
-  getRoomsQuerySchema,
+  getRoomsFilterSchema,
   updateRoomSchema,
 } from "./rooms.schema.ts";
 import { authMiddleware } from "../../middleware/auth.ts";
@@ -21,8 +21,14 @@ roomsRouter.post(
 );
 roomsRouter.get(
   "/",
-  validateMiddleware({ query: getRoomsQuerySchema }),
+  validateMiddleware({ query: getRoomsFilterSchema }),
   controller.getRooms,
+);
+roomsRouter.get(
+  "/inventory",
+  authMiddleware,
+  validateMiddleware({ query: getRoomsFilterSchema }),
+  controller.getRoomInventory,
 );
 roomsRouter.get(
   "/:id",
