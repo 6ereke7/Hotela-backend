@@ -14,13 +14,17 @@ export const rooms = pgTable("rooms", {
   id: uuid("id").primaryKey().defaultRandom(),
   roomNumber: varchar("room_number", { length: 10 }).notNull().unique(),
   type: varchar("type", { length: 50 }).notNull(),
-  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  pricePerNight: numeric("price_per_night", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
   capacity: integer("capacity").notNull(),
   bedType: varchar("bed_type", { length: 50 }).notNull(),
   floor: integer("floor").notNull(),
   amenities: text("amenities").array(),
   images: text("images").array(),
   isActive: boolean("is_active").notNull().default(true),
+  status: varchar("status", { length: 15 }).notNull().default("available"),
 });
 export const bookings = pgTable("bookings", {
   id: uuid("id").primaryKey().defaultRandom(),
