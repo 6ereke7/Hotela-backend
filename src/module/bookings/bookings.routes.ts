@@ -12,17 +12,11 @@ import { validateMiddleware } from "../../middleware/validate.ts";
 import {
   bookingIdSchema,
   confirmBookingSchema,
-  requestOtpSchema,
   updateBookingSchema,
 } from "./bookings.schema.ts";
 
 export const bookingsRouter: Router = Router();
 
-bookingsRouter.post(
-  "/otp",
-  validateMiddleware({ body: requestOtpSchema }),
-  requestOtp,
-);
 bookingsRouter.post(
   "/confirm",
   validateMiddleware({ body: confirmBookingSchema }),
